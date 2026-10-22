@@ -111,7 +111,7 @@ The sample passwords are stored in plain text and are converted to bcrypt hashes
 
 Developed as a two-person team project by **Dimitrios Tsalachouris** and **Vasileios Zachariadis**.
 
-My contribution: _TODO_
+**My contribution (Dimitrios):** I built the Node.js/Express backend and designed the MySQL database. That covers the REST API, JWT authentication and role-based access, the request workflow, and the transactional points system.
 
 ## Report
 
