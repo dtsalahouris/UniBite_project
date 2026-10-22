@@ -1,0 +1,15 @@
+# Dependencies
+node_modules/
+
+# Secrets — copy backend/.env.example to backend/.env instead
+.env
+
+# User-uploaded meal photos (keep the folder itself)
+backend/uploads/*
+!backend/uploads/.gitkeep
+
+# OS / editor junk
+.DS_Store
+.vscode/
+.idea/
+*.log
