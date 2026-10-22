@@ -1,0 +1,25 @@
+body {
+    -webkit-font-smoothing: antialiased;
+}
+
+.topbar {
+    background: transparent;
+}
+
+.unibite-logo {
+    height: 240px; 
+    object-fit: contain;
+    mix-blend-mode: multiply;
+    clip-path: inset(6px); 
+    margin-bottom: 10px;
+}
+
+.meal-card-inactive {
+    opacity: 0.6;
+    filter: grayscale(0.8);
+    background-color: #f8f9fa !important;
+}
+
+#map {
+    z-index: 1; 
+}

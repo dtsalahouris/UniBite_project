@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UniBite - Meals Feed</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="style.css">
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+</head>
+<body class="bg-light">
+    <header class="text-center py-4">
+        <img src="Subject.png" alt="UniBite Logo" class="unibite-logo">
+        <p class="text-secondary fw-bold">Student Food Sharing Platform</p>
+    </header>
+
+    <main class="container mb-5">
+        <section class="d-flex flex-column flex-md-row justify-content-between align-items-center mb-4">
+            <h2 class="text-primary mb-3 mb-md-0" style="color: #ce7961 !important;">Available Meals</h2>
+            <div class="d-flex gap-2 align-items-center">
+                <button id="loadMealsBtn" class="btn btn-primary" style="background-color: #ce7961; border: none;">Load Meals</button>
+                <div class="input-group">
+                    <span class="input-group-text">Radius (km)</span>
+                    <input type="number" id="searchRadius" class="form-control" value="5" min="1" style="max-width: 80px;">
+                    <button id="findNearMeBtn" class="btn btn-outline-secondary">Find Near Me</button>
+                </div>
+            </div>
+        </section>
+
+        <div id="statusMessage" class="alert alert-info text-center shadow-sm">
+            Press "Load Meals" to fetch data from the server.
+        </div>
+
+        <section id="authSection" class="card shadow-sm mb-4 border-0">
+            <div class="card-body p-4">
+                <div id="loginForm">
+                    <h2 class="card-title mb-4">Login</h2>
+                    <div class="mb-3">
+                        <input type="email" id="loginEmail" class="form-control" placeholder="Email" required>
+                    </div>
+                    <div class="mb-3">
+                        <input type="password" id="loginPassword" class="form-control" placeholder="Password" required>
+                    </div>
+                    <button id="loginBtn" class="btn btn-primary w-100 mb-3" style="background-color: #ce7961; border: none;">Login</button>
+                    <p class="text-center mb-0">Don't have an account? <a href="#" id="showRegister" class="text-decoration-none">Register here</a></p>
+                </div>
+                
+                <div id="registerForm" style="display: none;">
+                    <h2 class="card-title mb-4">Register</h2>
+                    <div class="mb-3">
+                        <input type="text" id="regFullName" class="form-control" placeholder="Full Name" required>
+                    </div>
+                    <div class="mb-3">
+                        <input type="email" id="regEmail" class="form-control" placeholder="Email" required>
+                    </div>
+                    <div class="mb-3">
+                        <input type="password" id="regPassword" class="form-control" placeholder="Password" required>
+                    </div>
+                    <div class="mb-3">
+                        <select id="regRole" class="form-select">
+                            <option value="consumer">Consumer (I want to eat)</option>
+                            <option value="cook">Cook (I want to share food)</option>
+                        </select>
+                    </div>
+                    <button id="registerBtn" class="btn btn-success w-100 mb-3">Register</button>
+                    <p class="text-center mb-0">Already have an account? <a href="#" id="showLogin" class="text-decoration-none">Login here</a></p>
+                </div>
+            </div>
+        </section>
+
+        <section id="userInfo" class="card shadow-sm mb-4 border-0" style="display:none;">
+            <div class="card-body p-4">
+                <div class="d-flex flex-column flex-md-row justify-content-between align-items-center border-bottom pb-3 mb-3 gap-3">
+                    <p class="fs-5 mb-0">Welcome, <strong id="userNameDisplay"></strong>! Points: <span id="userPointsDisplay" class="badge bg-warning text-dark fs-6"></span></p>
+                    <div class="d-flex gap-2">
+                        <button id="adminDashboardBtn" style="display:none;" class="btn btn-outline-danger" onclick="window.location.href='admin.html'">Admin Dashboard</button>
+                        <button id="logoutBtn" class="btn btn-outline-secondary">Logout</button>
+                    </div>
+                </div>
+
+                <div id="cookTools" style="display:none;">
+                    <div class="d-flex gap-3 justify-content-center flex-wrap mb-4">
+                        <button id="togglePostMealBtn" class="btn btn-success">Create New Meal</button>
+                        <button id="toggleRequestsBtn" class="btn btn-info text-white">View Incoming Requests</button>
+                    </div>
+
+                    <div id="postMealSection" class="bg-white p-4 rounded shadow-sm border mb-4" style="display:none;">
+                        <h4 class="mb-3 text-success">Post a New Meal</h4>
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <input type="text" id="mealTitle" class="form-control" placeholder="Meal Title (e.g., Homemade Pastitsio)" required>
+                            </div>
+                            <div class="col-md-6">
+                                <input type="file" id="mealImage" class="form-control" accept="image/*">
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label text-muted fw-bold">Allergens:</label>
+                                <div id="allergensContainer" class="d-flex gap-3 flex-wrap">
+                                    <span class="text-muted small">Loading allergens...</span>
+                                </div>
+                            </div>
+                            <div class="col-12">
+                                <textarea id="mealNotes" class="form-control" placeholder="Notes (ingredients, etc.)" rows="2"></textarea>
+                            </div>
+                            <div class="col-md-4">
+                                <input type="number" id="mealPortions" class="form-control" placeholder="Total Portions" min="1" required>
+                            </div>
+                            <div class="col-md-4">
+                                <input type="text" id="mealLocation" class="form-control" placeholder="Pickup Location" required>
+                            </div>
+                            <div class="col-md-4">
+                                <input type="datetime-local" id="mealTime" class="form-control" required>
+                            </div>
+                            <div class="col-12 mt-4">
+                                <button id="postMealBtn" class="btn btn-success w-100">Post Meal</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="incomingRequestsSection" class="bg-white p-4 rounded shadow-sm border mb-4" style="display:none;">
+                        <h4 class="mb-3 text-info">Incoming Food Requests</h4>
+                        <div id="requestsContainer" class="list-group"></div>
+                    </div>
+                </div>
+
+                <div id="consumerTools" style="display:none;">
+                    <h4 class="mt-4 border-top pt-4">My Requests</h4>
+                    <div id="myRequestsContainer" class="list-group mt-3"></div>
+                </div>
+            </div>
+        </section>
+        
+        <section id="adminSection" class="card shadow-sm mb-4 border-0" style="display:none;">
+            <div class="card-body">
+                <h2>Admin Dashboard</h2>
+                <div id="adminStats" class="mb-3"></div>
+                <h3>Top 10 Cooks Leaderboard</h3>
+                <div id="adminLeaderboard"></div>
+            </div>
+        </section>
+
+        <div id="mealsContainer" class="row g-4 mb-4"></div>
+        
+        <div id="map" class="shadow-sm rounded border mb-4" style="height: 400px; display: none;"></div>
+        
+    </main>
+
+    <div id="ratingModal" class="card shadow border-0 position-fixed" style="display:none; top:50%; left:50%; transform: translate(-50%, -50%); z-index:1050; width: 90%; max-width: 400px;">
+        <div class="card-body p-4">
+            <h4 class="card-title text-primary mb-3">Rate Meal</h4>
+            <div class="mb-3">
+                <label class="form-label text-muted">Stars (1-5)</label>
+                <input type="number" id="ratingValue" class="form-control" min="1" max="5" value="5">
+            </div>
+            <div class="mb-3">
+                <textarea id="ratingComment" class="form-control" placeholder="Write a comment (optional)..." rows="3"></textarea>
+            </div>
+            <div class="d-flex gap-2">
+                <button id="submitRatingBtn" class="btn btn-primary w-50">Submit</button>
+                <button class="btn btn-outline-secondary w-50" onclick="document.getElementById('ratingModal').style.display='none'">Cancel</button>
+            </div>
+        </div>
+    </div>
+    
+    <div id="editModal" class="card shadow border-0 position-fixed" style="display:none; top:50%; left:50%; transform: translate(-50%, -50%); z-index:1050; width: 90%; max-width: 450px;">
+        <div class="card-body p-4">
+            <h4 class="card-title text-primary mb-3">Edit Meal</h4>
+            <input type="hidden" id="editMealId">
+            <div class="mb-3"><input type="text" id="editMealTitle" class="form-control" placeholder="Title" required></div>
+            <div class="mb-3"><textarea id="editMealNotes" class="form-control" placeholder="Notes" rows="2"></textarea></div>
+            <div class="mb-3"><input type="text" id="editMealLocation" class="form-control" placeholder="Pickup Location" required></div>
+            <div class="mb-3"><input type="datetime-local" id="editMealTime" class="form-control" required></div>
+            <div class="d-flex gap-2">
+                <button id="submitEditBtn" class="btn btn-primary w-50">Save</button>
+                <button class="btn btn-outline-secondary w-50" onclick="document.getElementById('editModal').style.display='none'">Cancel</button>
+            </div>
+        </div>
+    </div>
+    <script src="app.js"></script>
+</body>
+</html>
