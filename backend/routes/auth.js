@@ -9,6 +9,12 @@ router.post('/register', async (req, res) => {
     try {
         const { full_name, email, password, role } = req.body;
 
+        // Only cook and consumer can self-register; admin accounts are created directly in the database
+        const ALLOWED_ROLES = ['cook', 'consumer'];
+        if (role !== undefined && !ALLOWED_ROLES.includes(role)) {
+            return res.status(400).json({ error: 'Role must be cook or consumer' });
+        }
+
         // Check if user exists
         const [existing] = await db.query('SELECT id FROM users WHERE email = ?', [email]);
         if (existing.length > 0) return res.status(400).json({ error: 'User already exists' });
